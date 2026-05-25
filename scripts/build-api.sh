@@ -7,7 +7,7 @@ echo "NPM version: $(npm --version)"
 
 # Install all dependencies (monorepo)
 echo "--- Installing dependencies ---"
-npm ci
+npm install
 
 # Build shared-types (types only, no build script needed)
 echo "--- Linking shared-types ---"
