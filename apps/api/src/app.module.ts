@@ -16,6 +16,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { StorageModule } from './storage/storage.module';
 import { SettingsModule } from './settings/settings.module';
 import { ProgramsController } from './programs/programs.controller';
+import { HealthController } from './health/health.controller';
 import { BullModule } from '@nestjs/bullmq';
 
 const redisHost = process.env.REDIS_HOST;
@@ -50,6 +51,6 @@ const hasRedis = redisHost && redisHost !== 'localhost' && redisHost !== '';
     StorageModule,
     SettingsModule,
   ],
-  controllers: [ProgramsController],
+  controllers: [ProgramsController, HealthController],
 })
 export class AppModule {}
