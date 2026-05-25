@@ -1,6 +1,5 @@
 {
   "framework": "nextjs",
-  "rootDirectory": "apps/web",
   "buildCommand": "cd ../.. && npm ci && npm run build --workspace=@kimy/web",
   "installCommand": "npm ci",
   "outputDirectory": ".next"

@@ -9,10 +9,10 @@ services:
   - type: web
     name: kimy-api
     runtime: node
-    repo: https://github.com/YOUR_USER/kimy
+    repo: https://github.com/Prueba295/kimy
     branch: main
     buildCommand: chmod +x scripts/build-api.sh && ./scripts/build-api.sh
-    startCommand: node apps/api/dist/main.js
+    startCommand: ./scripts/entrypoint.sh
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
@@ -46,7 +46,7 @@ services:
       - key: GROQ_API_KEY
         sync: false
       - key: AI_MODEL
-        value: "gpt-4o"
+        value: "llama-3.3-70b-versatile"
       - key: NEXT_PUBLIC_API_URL
         value: "https://kimy-api.onrender.com"
       - key: FRONTEND_URL
@@ -61,5 +61,9 @@ services:
         value: "60"
       - key: API_PORT
         value: "3001"
+      - key: PUPPETEER_SKIP_DOWNLOAD
+        value: "true"
+      - key: DEEPSEEK_API_KEY
+        sync: false
       - key: PRISMA_NO_DOTENV
         value: "1"
