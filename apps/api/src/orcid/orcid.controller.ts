@@ -26,7 +26,6 @@ export class OrcidController {
     await this.orcidService.handleCallback(code, state);
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     res.redirect(`${frontendUrl}/settings?orcid=connected`);
-    await this.orcidService.handleCallback(code, state);
   }
 
   @Get('profile')
