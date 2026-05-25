@@ -62,7 +62,7 @@ services:
       - key: API_PORT
         value: "3001"
       - key: PUPPETEER_SKIP_DOWNLOAD
-        value: "true"
+        value: "false"
       - key: DEEPSEEK_API_KEY
         sync: false
       - key: PRISMA_NO_DOTENV

@@ -86,7 +86,7 @@ export class CopyleaksProvider {
         filename: `${title.replace(/\s+/g, '_')}.txt`,
         properties: {
           webhooks: {
-            status: `${process.env.API_URL || 'http://localhost:3001'}/api/plagiarism/copyleaks-webhook/{STATUS}/${scanId}`,
+            status: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/plagiarism/copyleaks-webhook/{STATUS}/${scanId}`,
           },
           expiration: 1,
           checkDocumentForPlagiarism: true,

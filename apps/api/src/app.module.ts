@@ -19,21 +19,26 @@ import { ProgramsController } from './programs/programs.controller';
 import { HealthController } from './health/health.controller';
 import { BullModule } from '@nestjs/bullmq';
 
-const redisHost = process.env.REDIS_HOST;
-const hasRedis = redisHost && redisHost !== 'localhost' && redisHost !== '';
-
 @Module({
   imports: [
-    ...(hasRedis
-      ? [BullModule.forRoot({
-          connection: {
-            host: redisHost,
-            port: parseInt(process.env.REDIS_PORT || '6379'),
-            password: process.env.REDIS_PASSWORD || undefined,
-            ...(process.env.REDIS_TLS === 'true' ? { tls: {} } : {}),
-          },
-        })]
-      : []),
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+        password: process.env.REDIS_PASSWORD || undefined,
+        ...(process.env.REDIS_TLS === 'true' ? { tls: {} } : {}),
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false,
+        retryStrategy: (times: number) => {
+          if (times > 3) return null;
+          return Math.min(times * 200, 2000);
+        },
+      },
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 1000 },
+      },
+    }),
     PrismaModule,
     AuthModule,
     UsersModule,

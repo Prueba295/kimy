@@ -1,10 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
-import puppeteer from 'puppeteer';
 import * as nodemailer from 'nodemailer';
 import archiver from 'archiver';
 import { Readable, PassThrough } from 'stream';
+
+import puppeteer from 'puppeteer';
+
+function findChromePath(): string | undefined {
+  const envPath = process.env.CHROMIUM_PATH || process.env.CHROME_PATH || process.env.PUPPETEER_EXECUTABLE_PATH;
+  if (envPath) return envPath;
+  try {
+    const fs = require('fs');
+    for (const p of ['/usr/bin/chromium-browser', '/usr/bin/chromium', '/usr/bin/google-chrome']) {
+      try { fs.accessSync(p, fs.constants.X_OK); return p; } catch {}
+    }
+  } catch {}
+  return undefined;
+}
 
 @Injectable()
 export class ReportsService {
@@ -63,9 +76,11 @@ export class ReportsService {
   async generateAdvancePdf(advanceId: string, existingBrowser?: any): Promise<Buffer> {
     const report = await this.generateAdvanceReport(advanceId);
     
+    const chromePath = findChromePath();
     const browser = existingBrowser || await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--single-process'],
+      ...(chromePath ? { executablePath: chromePath } : {}),
     });
     
     try {
@@ -122,9 +137,11 @@ export class ReportsService {
   }
 
   async generateBatchPdf(advanceIds: string[]): Promise<Buffer> {
+    const chromePath = await findChrome();
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--single-process'],
+      ...(chromePath ? { executablePath: chromePath } : {}),
     });
     const archive = archiver('zip', { zlib: { level: 9 } });
     const buffers: Buffer[] = [];

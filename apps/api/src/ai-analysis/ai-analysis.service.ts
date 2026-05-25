@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -15,9 +15,9 @@ export class AiAnalysisService {
     private prisma: PrismaService,
     private storage: StorageService,
     private notifications: NotificationsService,
-    @InjectQueue('ai-analysis') private aiQueue: Queue,
-    @InjectQueue('plagiarism') private plagiarismQueue: Queue,
-    @InjectQueue('references') private referencesQueue: Queue,
+    @Optional() @InjectQueue('ai-analysis') private aiQueue?: Queue,
+    @Optional() @InjectQueue('plagiarism') private plagiarismQueue?: Queue,
+    @Optional() @InjectQueue('references') private referencesQueue?: Queue,
   ) {}
 
   /** Obtiene el modelo activo y proveedor desde SystemSettings */
@@ -49,6 +49,7 @@ export class AiAnalysisService {
   }
 
   async enqueueAnalyze(advanceId: string) {
+    if (!this.aiQueue) { this.logger.warn('Redis no disponible, omitiendo encolamiento'); return; }
     await this.aiQueue.add('analyze', { advanceId }, {
       attempts: 3,
       backoff: { type: 'exponential', delay: 5000 },
@@ -56,6 +57,7 @@ export class AiAnalysisService {
   }
 
   async enqueueReanalyze(advanceId: string) {
+    if (!this.aiQueue) { this.logger.warn('Redis no disponible, omitiendo encolamiento'); return; }
     await this.aiQueue.add('reanalyze', { advanceId }, {
       attempts: 3,
       backoff: { type: 'exponential', delay: 5000 },
@@ -272,12 +274,16 @@ export class AiAnalysisService {
       );
 
       // Encolar plagiarism y references después de que existan embeddings
-      await this.plagiarismQueue.add('analyze', { advanceId }).catch((e) =>
-        this.logger.warn(`Failed to enqueue plagiarism analysis: ${e?.message}`),
-      );
-      await this.referencesQueue.add('analyze', { advanceId }).catch((e) =>
-        this.logger.warn(`Failed to enqueue references analysis: ${e?.message}`),
-      );
+      if (this.plagiarismQueue) {
+        await this.plagiarismQueue.add('analyze', { advanceId }).catch((e) =>
+          this.logger.warn(`Failed to enqueue plagiarism analysis: ${e?.message}`),
+        );
+      }
+      if (this.referencesQueue) {
+        await this.referencesQueue.add('analyze', { advanceId }).catch((e) =>
+          this.logger.warn(`Failed to enqueue references analysis: ${e?.message}`),
+        );
+      }
 
       this.logger.log(`AI analysis complete: ${advanceId} — Score: ${result.scores.overall}%, Grade: ${result.grade}, Findings: ${result.findings.length}`);
     } else {
@@ -422,12 +428,16 @@ export class AiAnalysisService {
     });
 
     // Encolar plagiarism y references (sin embeddings reales, devolverán vacío — correcto)
-    await this.plagiarismQueue.add('analyze', { advanceId }).catch((e) =>
-      this.logger.warn(`Failed to enqueue plagiarism analysis: ${e?.message}`),
-    );
-    await this.referencesQueue.add('analyze', { advanceId }).catch((e) =>
-      this.logger.warn(`Failed to enqueue references analysis: ${e?.message}`),
-    );
+    if (this.plagiarismQueue) {
+      await this.plagiarismQueue.add('analyze', { advanceId }).catch((e) =>
+        this.logger.warn(`Failed to enqueue plagiarism analysis: ${e?.message}`),
+      );
+    }
+    if (this.referencesQueue) {
+      await this.referencesQueue.add('analyze', { advanceId }).catch((e) =>
+        this.logger.warn(`Failed to enqueue references analysis: ${e?.message}`),
+      );
+    }
 
     this.logger.log(`Fallback simulation complete: ${advanceId} -> ${status} (${overall.toFixed(1)}%)`);
   }

@@ -1,7 +1,8 @@
-import { Controller, Get, Query, Redirect, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Request, Res } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OrcidService } from './orcid.service';
+import { Response } from 'express';
 
 @ApiTags('orcid')
 @Controller('orcid')
@@ -17,8 +18,14 @@ export class OrcidController {
   }
 
   @Get('callback')
-  @Redirect('http://localhost:3000/settings?orcid=connected')
-  async callback(@Query('code') code: string, @Query('state') state: string) {
+  async callback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+  ) {
+    await this.orcidService.handleCallback(code, state);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/settings?orcid=connected`);
     await this.orcidService.handleCallback(code, state);
   }
 

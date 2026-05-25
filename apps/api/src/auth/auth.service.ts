@@ -201,7 +201,8 @@ export class AuthService {
     const expires = Date.now() + 15 * 60 * 1000;
     this.recoveryTokens.set(token, { userId: user.id, expires });
 
-    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
     console.log('\n==================================================');
     console.log(`📧 SIMULACIÓN DE CORREO DE RECUPERACIÓN DE CONTRASEÑA`);
     console.log(`Para: ${email}`);
