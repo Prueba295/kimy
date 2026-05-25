@@ -1,0 +1,65 @@
+# ═══════════════════════════════════════════
+# KIMY — Render Blueprint (Infrastructure as Code)
+# ═══════════════════════════════════════════
+# Usar "Render Blueprint" en Render para deploy automático
+# ═══════════════════════════════════════════
+
+services:
+  # ─── Backend API (NestJS) ────
+  - type: web
+    name: kimy-api
+    runtime: node
+    repo: https://github.com/YOUR_USER/kimy
+    branch: main
+    buildCommand: chmod +x scripts/build-api.sh && ./scripts/build-api.sh
+    startCommand: node apps/api/dist/main.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        value: "32771"
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: REDIS_TLS
+        value: "true"
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: S3_BUCKET
+        value: "thesis-documents"
+      - key: S3_REGION
+        value: "auto"
+      - key: S3_USE_SSL
+        value: "true"
+      - key: JWT_SECRET
+        sync: false
+      - key: AI_PROVIDER
+        value: "groq"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: AI_MODEL
+        value: "gpt-4o"
+      - key: NEXT_PUBLIC_API_URL
+        value: "https://kimy-api.onrender.com"
+      - key: FRONTEND_URL
+        value: "https://kimy-web.vercel.app"
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: INSTITUTION_NAME
+        value: "Universidad Nacional"
+      - key: MAX_GRADE
+        value: "20"
+      - key: LOW_COMPLIANCE_ALERT
+        value: "60"
+      - key: API_PORT
+        value: "3001"
+      - key: PRISMA_NO_DOTENV
+        value: "1"
