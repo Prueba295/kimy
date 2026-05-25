@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
   "rootDirectory": "apps/web",
-  "buildCommand": "cd ../.. && npm install && npm run build --workspace=@kimy/web",
-  "installCommand": "npm install",
+  "buildCommand": "cd ../.. && npm install --no-package-lock && npm run build --workspace=@kimy/web",
+  "installCommand": "npm install --no-package-lock",
   "outputDirectory": ".next"
 }
